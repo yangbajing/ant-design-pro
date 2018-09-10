@@ -1,8 +1,9 @@
 import fetch from 'dva/fetch';
-import { notification } from 'antd';
+import {notification} from 'antd';
 import router from 'umi/router';
 import hash from 'hash.js';
-import { isAntdPro } from './utils';
+import qs from 'qs';
+import {isAntdPro} from './utils';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -22,20 +23,32 @@ const codeMessage = {
   504: '网关超时。',
 };
 
-const checkStatus = response => {
+const checkStatus = response => new Promise(function (resolve, reject) {
   if (response.status >= 200 && response.status < 300) {
-    return response;
+    resolve(response);
+    return;
   }
   const errortext = codeMessage[response.status] || response.statusText;
-  notification.error({
-    message: `请求错误 ${response.status}: ${response.url}`,
-    description: errortext,
-  });
+  // notification.error({
+  //   message: `请求错误 ${response.status}: ${response.url}`,
+  //   description: errortext,
+  // });
   const error = new Error(errortext);
   error.name = response.status;
   error.response = response;
-  throw error;
-};
+  error.errortext = errortext;
+  if (response.method === 'DELETE' || response.status === 204) {
+    return response.text().then(msg => {
+      error.errortext = msg || error.errortext;
+      reject(error);
+    })
+  } else {
+    return response.json().then(json => {
+      error.errortext = json ? json.errMsg : error.errortext;
+      reject(error);
+    })
+  }
+});
 
 const cachedSave = (response, hashcode) => {
   /**
@@ -54,6 +67,10 @@ const cachedSave = (response, hashcode) => {
       });
   }
   return response;
+};
+
+const defaultOptions = {
+  credentials: 'include',
 };
 
 /**
@@ -79,10 +96,12 @@ export default function request(
     .update(fingerprint)
     .digest('hex');
 
-  const defaultOptions = {
-    credentials: 'include',
-  };
-  const newOptions = { ...defaultOptions, ...options };
+  const newOptions = {...defaultOptions, ...options};
+  if (newOptions.params) {
+    url = url.includes('?') ? url : url + '?';
+    url = url + qs.stringify(newOptions.params);
+    delete newOptions.params;
+  }
   if (
     newOptions.method === 'POST' ||
     newOptions.method === 'PUT' ||
@@ -131,6 +150,12 @@ export default function request(
       return response.json();
     })
     .catch(e => {
+      const errortext = e.errortext;
+      notification.error({
+        message: `请求错误 ${e.name}: ${e.response.url}`,
+        description: errortext,
+      });
+
       const status = e.name;
       if (status === 401) {
         // @HACK
@@ -141,16 +166,16 @@ export default function request(
         return;
       }
       // environment should not be used
-      if (status === 403) {
-        router.push('/exception/403');
-        return;
-      }
-      if (status <= 504 && status >= 500) {
-        router.push('/exception/500');
-        return;
-      }
-      if (status >= 404 && status < 422) {
-        router.push('/exception/404');
-      }
+      // if (status === 403) {
+      //   router.push('/exception/403');
+      //   return;
+      // }
+      // if (status <= 504 && status >= 500) {
+      //   router.push('/exception/500');
+      //   return;
+      // }
+      // if (status >= 404 && status < 422) {
+      //   router.push('/exception/404');
+      // }
     });
 }
