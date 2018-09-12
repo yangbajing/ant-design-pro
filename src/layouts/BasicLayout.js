@@ -204,6 +204,16 @@ class BasicLayout extends React.PureComponent {
     });
   };
 
+  renderSettingDrawer() {
+    // Do show SettingDrawer in production
+    // unless deployed in preview.pro.ant.design as demo
+    const { rendering } = this.state;
+    if ((rendering || process.env.NODE_ENV === 'production') && APP_TYPE !== 'site') {
+      return null;
+    }
+    return <SettingDrawer />;
+  }
+
   render() {
     const {
       navTheme,
@@ -211,7 +221,7 @@ class BasicLayout extends React.PureComponent {
       children,
       location: { pathname },
     } = this.props;
-    const { rendering, isMobile } = this.state;
+    const { isMobile } = this.state;
     const isTop = PropsLayout === 'topmenu';
     const menuData = this.getMenuData();
     const layout = (
@@ -245,6 +255,7 @@ class BasicLayout extends React.PureComponent {
         </Layout>
       </Layout>
     );
+
     return (
       <React.Fragment>
         <DocumentTitle title={this.getPageTitle(pathname)}>
@@ -256,9 +267,7 @@ class BasicLayout extends React.PureComponent {
             )}
           </ContainerQuery>
         </DocumentTitle>
-        {(rendering || process.env.NODE_ENV === 'production') ? null : ( // Do show SettingDrawer in production
-          <SettingDrawer />
-        )}
+        {this.renderSettingDrawer()}
       </React.Fragment>
     );
   }

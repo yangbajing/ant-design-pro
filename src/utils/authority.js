@@ -1,19 +1,24 @@
+import { isJsonString } from '@/utils/utils';
+
 // use localStorage to store the authority info, which might be sent from server in actual project.
 export function getAuthority() {
   // return localStorage.getItem('antd-pro-authority') || ['admin', 'user'];
-  let authority = localStorage.getItem('antd-pro-authority');
-  if (authority) {
-    if (authority.includes('[')) {
-      authority = JSON.parse(authority);
-    } else {
-      authority = [JSON.parse(authority)];
-    }
+  const authorityString = localStorage.getItem('antd-pro-authority');
+  let authority;
+  if (isJsonString(authorityString)) {
+    authority = JSON.parse(authorityString);
   } else {
-    authority = ['admin'];
+    authority = [authorityString];
   }
-  return authority;
+  return authority || ['admin'];
 }
 
 export function setAuthority(authority) {
-  return localStorage.setItem('antd-pro-authority', JSON.stringify(authority));
+  let authorityString;
+  if (isJsonString(authority)) {
+    authorityString = JSON.stringify(authority);
+  } else {
+    authorityString = [authority];
+  }
+  return localStorage.setItem('antd-pro-authority', authorityString);
 }
