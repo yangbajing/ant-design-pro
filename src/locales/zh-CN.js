@@ -184,5 +184,5 @@ export default {
 
   'menu.job': '调度任务',
   'menu.job.jobs': '任务列表',
-  'menu.job.item-step': '创建任务'
+  'menu.job.item-step': '创建任务',
 };

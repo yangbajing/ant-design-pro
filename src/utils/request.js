@@ -1,9 +1,8 @@
 import fetch from 'dva/fetch';
-import {notification} from 'antd';
-import router from 'umi/router';
+import { notification } from 'antd';
 import hash from 'hash.js';
 import qs from 'qs';
-import {isAntdPro} from './utils';
+import { isAntdPro } from './utils';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -23,32 +22,29 @@ const codeMessage = {
   504: '网关超时。',
 };
 
-const checkStatus = response => new Promise(function (resolve, reject) {
-  if (response.status >= 200 && response.status < 300) {
-    resolve(response);
-    return;
-  }
-  const errortext = codeMessage[response.status] || response.statusText;
-  // notification.error({
-  //   message: `请求错误 ${response.status}: ${response.url}`,
-  //   description: errortext,
-  // });
-  const error = new Error(errortext);
-  error.name = response.status;
-  error.response = response;
-  error.errortext = errortext;
-  if (response.method === 'DELETE' || response.status === 204) {
-    return response.text().then(msg => {
-      error.errortext = msg || error.errortext;
-      reject(error);
-    })
-  } else {
-    return response.json().then(json => {
+const checkStatus = response =>
+  Promise((resolve, reject) => {
+    if (response.status >= 200 && response.status < 300) {
+      resolve(response);
+      return;
+    }
+    const errortext = codeMessage[response.status] || response.statusText;
+    const error = new Error(errortext);
+    error.name = response.status;
+    error.response = response;
+    error.errortext = errortext;
+    if (response.method === 'DELETE' || response.status === 204) {
+      response.text().then(msg => {
+        error.errortext = msg || error.errortext;
+        reject(error);
+      });
+      return;
+    }
+    response.json().then(json => {
       error.errortext = json ? json.errMsg : error.errortext;
       reject(error);
-    })
-  }
-});
+    });
+  });
 
 const cachedSave = (response, hashcode) => {
   /**
@@ -76,16 +72,17 @@ const defaultOptions = {
 /**
  * Requests a URL, returning a promise.
  *
- * @param  {string} url       The URL we want to request
+ * @param  {string} _url       The URL we want to request
  * @param  {object} [options] The options we want to pass to "fetch"
  * @return {object}           An object containing either "data" or "err"
  */
 export default function request(
-  url,
+  _url,
   options = {
     expirys: isAntdPro(),
   }
 ) {
+  let url = _url;
   /**
    * Produce fingerprints based on url and parameters
    * Maybe url has the same parameters
@@ -96,10 +93,10 @@ export default function request(
     .update(fingerprint)
     .digest('hex');
 
-  const newOptions = {...defaultOptions, ...options};
+  const newOptions = { ...defaultOptions, ...options };
   if (newOptions.params) {
-    url = url.includes('?') ? url : url + '?';
-    url = url + qs.stringify(newOptions.params);
+    url = url.includes('?') ? url : `${url}?`;
+    url += qs.stringify(newOptions.params);
     delete newOptions.params;
   }
   if (
@@ -150,10 +147,9 @@ export default function request(
       return response.json();
     })
     .catch(e => {
-      const errortext = e.errortext;
       notification.error({
         message: `请求错误 ${e.name}: ${e.response.url}`,
-        description: errortext,
+        description: e.errortext,
       });
 
       const status = e.name;
@@ -163,7 +159,6 @@ export default function request(
         window.g_app._store.dispatch({
           type: 'login/logout',
         });
-        return;
       }
       // environment should not be used
       // if (status === 403) {

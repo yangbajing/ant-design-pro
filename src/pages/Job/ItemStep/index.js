@@ -1,12 +1,12 @@
-import React, {PureComponent, Fragment} from 'react';
-import {Card, Steps} from 'antd';
+import React, { PureComponent, Fragment } from 'react';
+import { Card, Steps } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import styles from '../style.less';
 
-const {Step} = Steps;
+const { Step } = Steps;
 
 export default class ItemStep extends PureComponent {
-  getCurrentStep = (pathname) => {
+  getCurrentStep = pathname => {
     const pathList = pathname.split('/');
     switch (pathList[pathList.length - 1]) {
       case 'item':
@@ -21,7 +21,7 @@ export default class ItemStep extends PureComponent {
   };
 
   render() {
-    const {location, children} = this.props;
+    const { location, children } = this.props;
     const title = '创建任务';
 
     return (
@@ -29,14 +29,14 @@ export default class ItemStep extends PureComponent {
         <Card>
           <Fragment>
             <Steps current={this.getCurrentStep(location.pathname)} className={styles.steps}>
-              <Step title="配置调度任务"/>
-              <Step title="配置触发策略"/>
-              <Step title="完成"/>
+              <Step title="配置调度任务" />
+              <Step title="配置触发策略" />
+              <Step title="完成" />
             </Steps>
             {children}
           </Fragment>
         </Card>
       </PageHeaderWrapper>
-    )
+    );
   }
 }

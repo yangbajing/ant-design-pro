@@ -1,36 +1,25 @@
-import React, {Component, Fragment} from 'react';
-import {connect} from 'dva';
+import React, { Component, Fragment } from 'react';
+import { connect } from 'dva';
 import router from 'umi/router';
-import Link from 'umi/link';
-import {FormattedMessage} from 'umi/locale';
 import StandardTable from '@/components/StandardTable';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import GridContent from '@/components/PageHeaderWrapper/GridContent';
+import { Button, Card, Col, Divider, Dropdown, Icon, Row } from 'antd';
+import moment from 'moment';
 import styles from './Jobs.less';
-import {Badge, Button, Card, Col, Divider, Dropdown, Icon, Row} from "antd";
-import moment from "moment";
 
-@connect(({job, loading}) => ({
+@connect(({ job, loading }) => ({
   job,
   loading: loading.models.rule,
 }))
 class Jobs extends Component {
   state = {
-    modalVisible: false,
-    updateModalVisible: false,
-    expandForm: false,
+    // modalVisible: false,
+    // updateModalVisible: false,
+    // expandForm: false,
     selectedRows: [],
-    formValues: {},
-    stepFormValues: {},
+    // formValues: {},
+    // stepFormValues: {},
   };
-
-  componentDidMount() {
-    const {dispatch} = this.props;
-    dispatch({
-      type: 'job/page',
-      payload: {size: 10}
-    });
-  }
 
   columns = [
     {
@@ -53,27 +42,6 @@ class Jobs extends Component {
     {
       title: '状态',
       dataIndex: 'status',
-      filters: [
-        {
-          text: status[0],
-          value: 0,
-        },
-        {
-          text: status[1],
-          value: 1,
-        },
-        {
-          text: status[2],
-          value: 2,
-        },
-        {
-          text: status[3],
-          value: 3,
-        },
-      ],
-      render(val) {
-        return <Badge status={statusMap[val]} text={status[val]}/>;
-      },
     },
     {
       title: '上次调度时间',
@@ -86,48 +54,51 @@ class Jobs extends Component {
       render: (text, record) => (
         <Fragment>
           <a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>
-          <Divider type="vertical"/>
+          <Divider type="vertical" />
           <a href="">订阅警报</a>
         </Fragment>
       ),
     },
   ];
 
-  handleModalVisible = flag => {
-    this.setState({
-      modalVisible: !!flag,
+  componentDidMount() {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'job/page',
+      payload: {
+        size: 10,
+      },
     });
-  };
+  }
 
-  handleUpdateModalVisible = (flag, record) => {
-    this.setState({
-      updateModalVisible: !!flag,
-      stepFormValues: record || {},
-    });
+  // handleModalVisible = flag => {
+  //   this.setState({
+  //     modalVisible: !!flag,
+  //   });
+  // };
+
+  handleUpdateModalVisible = () => {
+    // this.setState({
+    // updateModalVisible: !!flag,
+    // stepFormValues: record || {},
+    // });
   };
 
   handleCreate = () => {
-    router.push('/job/item-step')
+    router.push('/job/item-step');
   };
 
   render() {
-    const {
-      job,
-      loading,
-    } = this.props;
-    const {selectedRows, modalVisible, updateModalVisible, stepFormValues} = this.state;
+    const { loading } = this.props;
+    const { selectedRows } = this.state;
 
-    const Info = ({title, value, bordered}) => (
+    const Info = ({ title, value, bordered }) => (
       <div className={styles.headerInfo}>
         <span>{title}</span>
         <p>{value}</p>
-        {bordered && <em/>}
+        {bordered && <em />}
       </div>
     );
-
-    console.log('job', job);
-
-    const data = [];
 
     return (
       <PageHeaderWrapper>
@@ -135,13 +106,13 @@ class Jobs extends Component {
           <Card bordered={false}>
             <Row>
               <Col sm={8} xs={24}>
-                <Info title="总任务" value="8个任务" bordered/>
+                <Info title="总任务" value="8个任务" bordered />
               </Col>
               <Col sm={8} xs={24}>
-                <Info title="本周任务平均执行时间" value="32分钟" bordered/>
+                <Info title="本周任务平均执行时间" value="32分钟" bordered />
               </Col>
               <Col sm={8} xs={24}>
-                <Info title="本周已执行任务次数" value="24个任务"/>
+                <Info title="本周已执行任务次数" value="24个任务" />
               </Col>
             </Row>
           </Card>
@@ -154,20 +125,19 @@ class Jobs extends Component {
                 </Button>
                 {selectedRows.length > 0 && (
                   <span>
-                  <Button>批量操作</Button>
-                  <Dropdown overlay={menu}>
-                    <Button>
-                      更多操作 <Icon type="down"/>
-                    </Button>
-                  </Dropdown>
-                </span>
+                    <Button>批量操作</Button>
+                    <Dropdown>
+                      <Button>
+                        更多操作 <Icon type="down" />
+                      </Button>
+                    </Dropdown>
+                  </span>
                 )}
               </div>
               <StandardTable
                 selectedRows={selectedRows}
                 loading={loading}
                 columns={this.columns}
-                data={data}
                 onSelectRow={this.handleSelectRows}
                 onChange={this.handleStandardTableChange}
               />
@@ -175,7 +145,7 @@ class Jobs extends Component {
           </Card>
         </div>
       </PageHeaderWrapper>
-    )
+    );
   }
 }
 

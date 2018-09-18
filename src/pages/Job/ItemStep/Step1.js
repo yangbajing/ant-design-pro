@@ -1,7 +1,7 @@
-import React, {Component, Fragment} from 'react';
-import {connect} from 'dva';
+import React, { Component, Fragment } from 'react';
+import { connect } from 'dva';
 import router from 'umi/router';
-import {Button, Form, Input, Radio} from 'antd';
+import { Button, Form, Input, Radio } from 'antd';
 import InputArray from '@/components/Control/InputArray';
 import InputMap from '@/components/Control/InputMap';
 import styles from '../style.less';
@@ -18,29 +18,35 @@ const formItemLayout = {
   },
 };
 
-@connect(({job}) => ({
-  job
+@connect(({ job }) => ({
+  job,
 }))
 @Form.create()
 class Step1 extends Component {
   state = {
-    selectProgram: undefined
+    selectProgram: undefined,
   };
 
-  handleProgramChange = (e) => {
-    const selectProgram = e.target.value;
-    if (this.state.selectProgram !== selectProgram) {
-      const versions = this.props.job.option.programVersion[selectProgram];
+  handleProgramChange = e => {
+    const { value } = e.target;
+    const { selectProgram } = this.state;
+    const { job, form } = this.props;
+    if (selectProgram !== value) {
+      const versions = job.option.programVersion[value];
       if (versions && versions[0]) {
-        this.props.form.setFieldsValue({programVersion:versions[0].value});
+        form.setFieldsValue({ programVersion: versions[0].value });
       }
-      this.setState({selectProgram});
+      this.setState({ selectProgram: value });
     }
   };
 
   handleValidateForm = () => {
-    const {form, dispatch, job: {itemStep}} = this.props;
-    const {validateFields} = form;
+    const {
+      form,
+      dispatch,
+      job: { itemStep },
+    } = this.props;
+    const { validateFields } = form;
     validateFields((err, values) => {
       if (err) {
         return;
@@ -54,34 +60,37 @@ class Step1 extends Component {
           data: itemStep.item.data || {},
           programOptions: values.programOptions || [],
           programArgs: values.programArgs || [],
-        }
+        },
       };
       dispatch({
         type: 'job/saveItemStep',
-        payload
+        payload,
       });
       router.push('/job/item-step/trigger');
     });
   };
 
   render() {
-    const {form, job: {itemStep, option}} = this.props;
-    const {getFieldDecorator} = form;
+    const {
+      form,
+      job: { itemStep, option },
+    } = this.props;
+    const { selectProgram } = this.state;
+    const { getFieldDecorator } = form;
     const item = itemStep.item || {};
 
     const programVersionDecorator = getFieldDecorator('programVersion', {
       initialValue: item.programVersion,
-      rules: [
-        {required: true, message: '请选择任务执行程序版本'},
-      ],
+      rules: [{ required: true, message: '请选择任务执行程序版本' }],
     })(
       <RadioGroup buttonStyle="solid">
-        {(option.programVersion[this.state.selectProgram] || []).map(opt =>
-          <RadioButton key={opt.value} value={opt.value}>{opt.title}</RadioButton>
-        )}
+        {(option.programVersion[selectProgram] || []).map(opt => (
+          <RadioButton key={opt.value} value={opt.value}>
+            {opt.title}
+          </RadioButton>
+        ))}
       </RadioGroup>
-      );
-
+    );
 
     return (
       <Fragment>
@@ -89,60 +98,55 @@ class Step1 extends Component {
           <Form.Item {...formItemLayout} label="任务key">
             {getFieldDecorator('key', {
               initialValue: item.key,
-              rules: [{required: true, message: '请设置任务key'}],
-            })(
-              <Input placeholder="任务key，需要全局唯一"/>
-            )}
+              rules: [{ required: true, message: '请设置任务key' }],
+            })(<Input placeholder="任务key，需要全局唯一" />)}
           </Form.Item>
           <Form.Item {...formItemLayout} label="程序类型">
             {getFieldDecorator('program', {
               initialValue: item.program,
-              rules: [
-                {required: true, message: '请选择任务执行程序类型'},
-              ],
+              rules: [{ required: true, message: '请选择任务执行程序类型' }],
             })(
               <RadioGroup buttonStyle="solid" onChange={this.handleProgramChange}>
-                {option.program.map(opt => <RadioButton key={opt.value} value={opt.value}>{opt.title}</RadioButton>)}
-              </RadioGroup>)}
+                {option.program.map(opt => (
+                  <RadioButton key={opt.value} value={opt.value}>
+                    {opt.title}
+                  </RadioButton>
+                ))}
+              </RadioGroup>
+            )}
           </Form.Item>
-          <Form.Item {...formItemLayout} label="程序版本">{programVersionDecorator}</Form.Item>
+          <Form.Item {...formItemLayout} label="程序版本">
+            {programVersionDecorator}
+          </Form.Item>
           <Form.Item {...formItemLayout} label="程序选项">
             {getFieldDecorator('programOptions', {
               initialValue: item.programOptions,
-            })(
-              <InputArray delLabel="移除选项"/>
-            )}
+            })(<InputArray delLabel="移除选项" />)}
           </Form.Item>
           <Form.Item {...formItemLayout} label="程序主类/文件">
             {getFieldDecorator('programMain', {
               initialValue: item.programMain,
-              rules: [
-                {required: true, message: '请输入程序主类或可执行主文件名'},
-              ],
-            })(<Input placeholder="程序主类或可执行主文件名"/>)}
+              rules: [{ required: true, message: '请输入程序主类或可执行主文件名' }],
+            })(<Input placeholder="程序主类或可执行主文件名" />)}
           </Form.Item>
           <Form.Item {...formItemLayout} label="程序参数">
             {getFieldDecorator('programArgs', {
               initialValue: item.programArgs,
-            })(
-              <InputArray delLabel="移除参数"/>
-            )}
+            })(<InputArray delLabel="移除参数" />)}
           </Form.Item>
           <Form.Item {...formItemLayout} label="任务Data">
             {getFieldDecorator('data', {
               initialState: item.data,
-            })(<InputMap delLabel="移除参数"/>)}
+            })(<InputMap delLabel="移除参数" />)}
           </Form.Item>
           <Form.Item {...formItemLayout} label="描述">
             {getFieldDecorator('description', {
-              initialValue: item.description
-            })(
-              <Input.TextArea rows={4}/>
-            )}
+              initialValue: item.description,
+            })(<Input.TextArea rows={4} />)}
           </Form.Item>
           <Form.Item
             wrapperCol={{
-              xs: {span: 24, offset: 0},
+              xs: { span: 24, offset: 0 },
               sm: {
                 span: formItemLayout.wrapperCol.span,
                 offset: formItemLayout.labelCol.span,
