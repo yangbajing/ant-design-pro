@@ -8,20 +8,21 @@ export default {
   state: {
     page: {},
     itemStep: { item: {}, trigger: {} },
+    option: {},
   },
 
   effects: {
     *page({ payload }, { call, put }) {
-      const response = yield call(queryPageJob, payload);
+      const resp = yield call(queryPageJob, payload);
       yield put({
         type: 'queryPage',
-        payload: response || {},
+        payload: resp || {},
       });
     },
-    *fetchOptionAll(_, { call, put }) {
-      const resp = yield call(queryOptionAll);
+    *fetchOptionAll(args, { call, put }) {
+      const resp = yield call(queryOptionAll, {});
       yield put({
-        type: 'optionAll',
+        type: 'saveOptionAll',
         payload: resp || {},
       });
     },
@@ -48,10 +49,9 @@ export default {
         page: payload,
       };
     },
-    optionAll(state, { payload }) {
+    saveOptionAll(state, { payload }) {
       const option = {
-        program: payload.program.filter(item => item.value !== 0),
-        triggerType: payload.triggerType.filter(item => item.value !== 0),
+        ...payload,
         programVersion: payload.programVersion.reduce((obj, item) => {
           const o = { ...obj };
           o[item.programId] = item.versions;

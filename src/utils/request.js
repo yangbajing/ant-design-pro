@@ -1,6 +1,6 @@
 import fetch from 'dva/fetch';
 import { notification } from 'antd';
-import hash from 'hash.js';
+// import hash from 'hash.js';
 import qs from 'qs';
 import { isAntdPro } from './utils';
 
@@ -23,7 +23,7 @@ const codeMessage = {
 };
 
 const checkStatus = response =>
-  Promise((resolve, reject) => {
+  new Promise((resolve, reject) => {
     if (response.status >= 200 && response.status < 300) {
       resolve(response);
       return;
@@ -46,24 +46,24 @@ const checkStatus = response =>
     });
   });
 
-const cachedSave = (response, hashcode) => {
-  /**
-   * Clone a response data and store it in sessionStorage
-   * Does not support data other than json, Cache only json
-   */
-  const contentType = response.headers.get('Content-Type');
-  if (contentType && contentType.match(/application\/json/i)) {
-    // All data is saved as text
-    response
-      .clone()
-      .text()
-      .then(content => {
-        sessionStorage.setItem(hashcode, content);
-        sessionStorage.setItem(`${hashcode}:timestamp`, Date.now());
-      });
-  }
-  return response;
-};
+// const cachedSave = (response, hashcode) => {
+//   /**
+//    * Clone a response data and store it in sessionStorage
+//    * Does not support data other than json, Cache only json
+//    */
+//   const contentType = response.headers.get('Content-Type');
+//   if (contentType && contentType.match(/application\/json/i)) {
+//     // All data is saved as text
+//     response
+//       .clone()
+//       .text()
+//       .then(content => {
+//         sessionStorage.setItem(hashcode, content);
+//         sessionStorage.setItem(`${hashcode}:timestamp`, Date.now());
+//       });
+//   }
+//   return response;
+// };
 
 const defaultOptions = {
   credentials: 'include',
@@ -87,18 +87,21 @@ export default function request(
    * Produce fingerprints based on url and parameters
    * Maybe url has the same parameters
    */
-  const fingerprint = url + (options.body ? JSON.stringify(options.body) : '');
-  const hashcode = hash
-    .sha256()
-    .update(fingerprint)
-    .digest('hex');
+  // const fingerprint = url + (options.body ? JSON.stringify(options.body) : '');
+  // const hashcode = hash
+  //   .sha256()
+  //   .update(fingerprint)
+  //   .digest('hex');
 
   const newOptions = { ...defaultOptions, ...options };
   if (newOptions.params) {
-    url = url.includes('?') ? url : `${url}?`;
+    if (url.includes('?')) {
+      url += '?';
+    }
     url += qs.stringify(newOptions.params);
     delete newOptions.params;
   }
+
   if (
     newOptions.method === 'POST' ||
     newOptions.method === 'PUT' ||
@@ -120,57 +123,59 @@ export default function request(
     }
   }
 
-  const expirys = options.expirys || 60;
-  // options.expirys !== false, return the cache,
-  if (options.expirys !== false) {
-    const cached = sessionStorage.getItem(hashcode);
-    const whenCached = sessionStorage.getItem(`${hashcode}:timestamp`);
-    if (cached !== null && whenCached !== null) {
-      const age = (Date.now() - whenCached) / 1000;
-      if (age < expirys) {
-        const response = new Response(new Blob([cached]));
+  // const expirys = options.expirys || 60;
+  // // options.expirys !== false, return the cache,
+  // if (options.expirys !== false) {
+  //   const cached = sessionStorage.getItem(hashcode);
+  //   const whenCached = sessionStorage.getItem(`${hashcode}:timestamp`);
+  //   if (cached !== null && whenCached !== null) {
+  //     const age = (Date.now() - whenCached) / 1000;
+  //     if (age < expirys) {
+  //       const response = new Response(new Blob([cached]));
+  //       return response.json();
+  //     }
+  //     sessionStorage.removeItem(hashcode);
+  //     sessionStorage.removeItem(`${hashcode}:timestamp`);
+  //   }
+  // }
+  return (
+    fetch(url, newOptions)
+      .then(checkStatus)
+      // .then(response => cachedSave(response, hashcode))
+      .then(response => {
+        // DELETE and 204 do not return data by default
+        // using .json will report an error.
+        if (newOptions.method === 'DELETE' || response.status === 204) {
+          return response.text();
+        }
         return response.json();
-      }
-      sessionStorage.removeItem(hashcode);
-      sessionStorage.removeItem(`${hashcode}:timestamp`);
-    }
-  }
-  return fetch(url, newOptions)
-    .then(checkStatus)
-    .then(response => cachedSave(response, hashcode))
-    .then(response => {
-      // DELETE and 204 do not return data by default
-      // using .json will report an error.
-      if (newOptions.method === 'DELETE' || response.status === 204) {
-        return response.text();
-      }
-      return response.json();
-    })
-    .catch(e => {
-      notification.error({
-        message: `请求错误 ${e.name}: ${e.response.url}`,
-        description: e.errortext,
-      });
-
-      const status = e.name;
-      if (status === 401) {
-        // @HACK
-        /* eslint-disable no-underscore-dangle */
-        window.g_app._store.dispatch({
-          type: 'login/logout',
+      })
+      .catch(e => {
+        notification.error({
+          message: `请求错误 ${e.name}: ${e.response.url}`,
+          description: e.errortext,
         });
-      }
-      // environment should not be used
-      // if (status === 403) {
-      //   router.push('/exception/403');
-      //   return;
-      // }
-      // if (status <= 504 && status >= 500) {
-      //   router.push('/exception/500');
-      //   return;
-      // }
-      // if (status >= 404 && status < 422) {
-      //   router.push('/exception/404');
-      // }
-    });
+
+        const status = e.name;
+        if (status === 401) {
+          // @HACK
+          /* eslint-disable no-underscore-dangle */
+          window.g_app._store.dispatch({
+            type: 'login/logout',
+          });
+        }
+        // environment should not be used
+        // if (status === 403) {
+        //   router.push('/exception/403');
+        //   return;
+        // }
+        // if (status <= 504 && status >= 500) {
+        //   router.push('/exception/500');
+        //   return;
+        // }
+        // if (status >= 404 && status < 422) {
+        //   router.push('/exception/404');
+        // }
+      })
+  );
 }

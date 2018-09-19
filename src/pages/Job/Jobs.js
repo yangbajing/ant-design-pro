@@ -21,33 +21,51 @@ class Jobs extends Component {
     // stepFormValues: {},
   };
 
-  columns = [
+  componentDidMount() {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'job/page',
+      payload: {
+        size: 10,
+      },
+    });
+  }
+
+  /**
+   * @param option Job配置
+   * @returns {*[]}
+   */
+  columns = option => [
     {
       title: '任务',
-      dataIndex: 'jobKey',
+      dataIndex: 'key',
     },
     {
       title: '描述',
-      dataIndex: 'description',
+      dataIndex: 'config.description',
     },
     {
       title: '服务调用次数',
-      dataIndex: 'callNo',
+      dataIndex: 'scheduleCount',
       sorter: true,
       align: 'right',
-      render: val => `${val} 万`,
+      // render: val => `${val} 万`,
       // mark to display a total number
       needTotal: true,
     },
     {
       title: '状态',
       dataIndex: 'status',
+      render: v => {
+        const status = option.jobStatus.find(s => s.value === v);
+        return <span>{status ? status.title : v}</span>;
+      },
     },
     {
       title: '上次调度时间',
-      dataIndex: 'updatedAt',
+      dataIndex: 'lastScheduledAt',
       sorter: true,
-      render: val => <span>{moment(val).format('YYYY-MM-DD HH:mm:ss')}</span>,
+      render: val => <span>{val ? moment(val).format('YYYY-MM-DD hh:mm:ss Z') : ''}</span>,
     },
     {
       title: '操作',
@@ -60,16 +78,6 @@ class Jobs extends Component {
       ),
     },
   ];
-
-  componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'job/page',
-      payload: {
-        size: 10,
-      },
-    });
-  }
 
   // handleModalVisible = flag => {
   //   this.setState({
@@ -89,7 +97,10 @@ class Jobs extends Component {
   };
 
   render() {
-    const { loading } = this.props;
+    const {
+      loading,
+      job: { page, option },
+    } = this.props;
     const { selectedRows } = this.state;
 
     const Info = ({ title, value, bordered }) => (
@@ -99,6 +110,16 @@ class Jobs extends Component {
         {bordered && <em />}
       </div>
     );
+
+    const list = page.content || [];
+    /*
+    .map(item => {
+      return {
+        ...item,
+      };
+    });
+    */
+    const data = { list };
 
     return (
       <PageHeaderWrapper>
@@ -137,7 +158,8 @@ class Jobs extends Component {
               <StandardTable
                 selectedRows={selectedRows}
                 loading={loading}
-                columns={this.columns}
+                columns={this.columns(option)}
+                data={data}
                 onSelectRow={this.handleSelectRows}
                 onChange={this.handleStandardTableChange}
               />

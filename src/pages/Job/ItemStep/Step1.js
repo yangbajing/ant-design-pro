@@ -31,8 +31,9 @@ class Step1 extends Component {
     const { value } = e.target;
     const { selectProgram } = this.state;
     const { job, form } = this.props;
+    const programVersion = job.option.programVersion || {};
     if (selectProgram !== value) {
-      const versions = job.option.programVersion[value];
+      const versions = programVersion[value];
       if (versions && versions[0]) {
         form.setFieldsValue({ programVersion: versions[0].value });
       }
@@ -75,6 +76,9 @@ class Step1 extends Component {
       form,
       job: { itemStep, option },
     } = this.props;
+    if (!option.programVersion) {
+      return <div />;
+    }
     const { selectProgram } = this.state;
     const { getFieldDecorator } = form;
     const item = itemStep.item || {};
