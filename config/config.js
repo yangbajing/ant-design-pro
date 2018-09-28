@@ -34,6 +34,12 @@ export default {
           : {}),
       },
     ],
+    [
+      'umi-plugin-ga',
+      {
+        code: 'UA-72788897-6',
+      },
+    ],
   ],
   define: {
     APP_TYPE: process.env.APP_TYPE || '',
@@ -95,9 +101,9 @@ export default {
   },
 
   proxy: {
-    "/api": {
-      target: "http://localhost:22222",
-      changeOrigin: true
-    }
+    '/api': {
+      target: 'http://localhost:22222',
+      changeOrigin: true,
+    },
   },
 };

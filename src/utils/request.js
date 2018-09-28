@@ -34,16 +34,22 @@ const checkStatus = response =>
     error.response = response;
     error.errortext = errortext;
     if (response.method === 'DELETE' || response.status === 204) {
-      response.text().then(msg => {
-        error.errortext = msg || error.errortext;
-        reject(error);
-      });
+      response.text().then(
+        msg => {
+          error.errortext = msg || error.errortext;
+          reject(error);
+        },
+        () => reject(error)
+      );
       return;
     }
-    response.json().then(json => {
-      error.errortext = json ? json.errMsg : error.errortext;
-      reject(error);
-    });
+    response.json().then(
+      obj => {
+        error.errortext = obj.errMsg || error.errortext;
+        reject(error);
+      },
+      () => reject(error)
+    );
   });
 
 // const cachedSave = (response, hashcode) => {
@@ -95,7 +101,7 @@ export default function request(
 
   const newOptions = { ...defaultOptions, ...options };
   if (newOptions.params) {
-    if (url.includes('?')) {
+    if (!url.includes('?')) {
       url += '?';
     }
     url += qs.stringify(newOptions.params);
