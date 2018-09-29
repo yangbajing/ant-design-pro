@@ -4,10 +4,10 @@ export default [
     path: '/user',
     component: '../layouts/UserLayout',
     routes: [
-      {path: '/user', redirect: '/user/login'},
-      {path: '/user/login', component: './User/Login'},
-      {path: '/user/register', component: './User/Register'},
-      {path: '/user/register-result', component: './User/RegisterResult'},
+      { path: '/user', redirect: '/user/login' },
+      { path: '/user/login', component: './User/Login' },
+      { path: '/user/register', component: './User/Register' },
+      { path: '/user/register-result', component: './User/RegisterResult' },
     ],
   },
   // app
@@ -18,7 +18,7 @@ export default [
     authority: ['admin', 'user'],
     routes: [
       // dashboard
-      {path: '/', redirect: '/dashboard/analysis'},
+      { path: '/', redirect: '/dashboard/analysis' },
       {
         path: '/dashboard',
         name: 'dashboard',
@@ -167,7 +167,7 @@ export default [
             name: 'success',
             component: './Result/Success',
           },
-          {path: '/result/fail', name: 'fail', component: './Result/Error'},
+          { path: '/result/fail', name: 'fail', component: './Result/Error' },
         ],
       },
       {
@@ -263,19 +263,13 @@ export default [
         path: '/job',
         icon: 'table',
         routes: [
-          {path: '/job', redirect: '/job/jobs'},
-          {path: '/job/jobs', name: 'jobs', component: './Job/Jobs'},
+          { path: '/job', redirect: '/job/jobs' },
+          { path: '/job/jobs', name: 'jobs', component: './Job/Jobs' },
           {
-            path: '/job/item-step',
-            name: 'item-step',
-            component: './Job/ItemStep',
-            hideChildrenInMenu: true,
-            routes: [
-              {path: '/job/item-step', redirect: '/job/item-step/item'},
-              {path: '/job/item-step/item', component: './Job/ItemStep/Step1'},
-              {path: '/job/item-step/trigger', component: './Job/ItemStep/Step2'},
-              {path: '/job/item-step/result', component: './Job/ItemStep/Step3'},
-            ]
+            path: '/job/item/:jobKey',
+            hideInMenu: true,
+            name: 'job-item',
+            component: './Job/JobItem',
           },
         ],
       },

@@ -231,7 +231,7 @@ export default {
   'app.setting.production.hint':
     '配置栏只在开发环境用于预览，生产环境不会展现，请拷贝后手动修改配置文件',
 
-  'menu.job': '调度任务',
-  'menu.job.jobs': '任务列表',
-  'menu.job.item-step': '创建任务',
+  'menu.job': '调度作业',
+  'menu.job.jobs': '作业列表',
+  'menu.job.job-item': '作业',
 };
