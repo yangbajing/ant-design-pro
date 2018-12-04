@@ -1,19 +1,19 @@
-import React, { Component } from 'react';
-import { connect } from 'dva';
-import { Button, Col, Form, Input, Radio, Row } from 'antd';
+import React from 'react';
+import { Button, Col, Form, Input, Radio, Row, Upload, Icon } from 'antd';
 import InputArray from '@/components/Control/InputArray';
 import InputMap from '@/components/Control/InputMap';
+import request from '@/utils/request';
 
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 
-@connect(({ job }) => ({
-  job,
-}))
 @Form.create()
-class Step1 extends Component {
+class Step1 extends React.PureComponent {
   state = {
     selectProgram: undefined,
+    fileList: [],
+    uploading: false,
+    jobItem: {},
   };
 
   handleProgramChange = e => {
@@ -56,8 +56,32 @@ class Step1 extends Component {
         type: 'job/saveItemStep',
         payload,
       });
-      // router.push('/job/item-step/trigger');
     });
+  };
+
+  handleUpload = () => {
+    const { fileList } = this.state;
+    const formData = new FormData();
+    fileList.forEach((file, idx) => {
+      formData.append(encodeURIComponent(`files-${idx}`), file);
+    });
+
+    this.setState({
+      uploading: true,
+    });
+    console.log('formData', formData);
+
+    request(`/job/api/v1/job/upload_file`, {
+      method: 'POST',
+      body: formData,
+    }).then(response => {
+      // TODO 上传成功后返回资源文件在服务端的路径，再存入state中。
+      const { jobItem } = this.state;
+      console.log('/job/api/v1/job/upload_file response: ', response);
+      const newJobItem = { ...jobItem, fileResources: [] };
+      this.setState({ jobItem: newJobItem });
+    });
+    setTimeout(() => this.setState({ uploading: false }), 5000);
   };
 
   render() {
@@ -65,6 +89,7 @@ class Step1 extends Component {
       form,
       job: { itemStep, option },
     } = this.props;
+    const { uploading } = this.state;
     if (!option.programVersion) {
       return <div />;
     }
@@ -84,6 +109,26 @@ class Step1 extends Component {
         ))}
       </RadioGroup>
     );
+
+    const fileProps = {
+      onRemove: file => {
+        this.setState(({ fileList }) => {
+          const index = fileList.indexOf(file);
+          const newFileList = fileList.slice();
+          newFileList.splice(index, 1);
+          return {
+            fileList: newFileList,
+          };
+        });
+      },
+      beforeUpload: file => {
+        this.setState(({ fileList }) => ({
+          fileList: [...fileList, file],
+        }));
+        return false;
+      },
+      fileList: this.state.fileList,
+    };
 
     return (
       <Form>
@@ -137,12 +182,31 @@ class Step1 extends Component {
               })(<InputArray delLabel="移除参数" />)}
             </Form.Item>
           </Col>
+          <Col span={12}>
+            <Form.Item label="任务Data">
+              {getFieldDecorator('data', {
+                initialState: item.data,
+              })(<InputMap delLabel="移除参数" />)}
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="资源文件">
+              <Upload {...fileProps}>
+                <Button>
+                  <Icon type="upload" /> 选择资源文件
+                </Button>
+              </Upload>
+              <Button
+                type="primary"
+                onClick={this.handleUpload}
+                disabled={this.state.fileList.length === 0}
+                loading={uploading}
+              >
+                {uploading ? '上传中……' : '开始上传'}
+              </Button>
+            </Form.Item>
+          </Col>
         </Row>
-        <Form.Item label="任务Data">
-          {getFieldDecorator('data', {
-            initialState: item.data,
-          })(<InputMap delLabel="移除参数" />)}
-        </Form.Item>
         <Form.Item label="描述">
           {getFieldDecorator('description', {
             initialValue: item.description,

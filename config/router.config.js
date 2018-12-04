@@ -17,7 +17,7 @@ export default [
     Routes: ['src/pages/Authorized'],
     authority: ['admin', 'user'],
     routes: [
-      // dashboard
+      /*      // dashboard
       { path: '/', redirect: '/dashboard/analysis' },
       {
         path: '/dashboard',
@@ -256,7 +256,8 @@ export default [
           },
         ],
       },
-
+*/
+      { path: '/', redirect: '/job/jobs' },
       // job
       {
         name: 'job',

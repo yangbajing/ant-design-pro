@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import { connect } from 'dva';
+import React from 'react';
 import { Button, Col, DatePicker, Form, Input, Radio, Row } from 'antd';
 import locale from 'antd/lib/date-picker/locale/zh_CN';
 import moment from 'moment';
@@ -7,11 +6,8 @@ import moment from 'moment';
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
 
-@connect(({ job }) => ({
-  job,
-}))
 @Form.create()
-class Step2 extends PureComponent {
+class Step2 extends React.PureComponent {
   handleValidateForm = () => {
     const {
       form,

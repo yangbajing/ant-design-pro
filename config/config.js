@@ -101,6 +101,10 @@ export default {
   },
 
   proxy: {
+    '/job/api': {
+      target: 'http://localhost:22222',
+      changeOrigin: true,
+    },
     '/api': {
       target: 'http://localhost:22222',
       changeOrigin: true,

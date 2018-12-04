@@ -1,6 +1,7 @@
 import { routerRedux } from 'dva/router';
 import { message } from 'antd';
 import { queryPageJob, createJob, queryOptionAll } from '@/services/job';
+import * as jobApi from '@/services/job';
 
 export default {
   namespace: 'job',
@@ -24,6 +25,13 @@ export default {
       yield put({
         type: 'saveOptionAll',
         payload: resp || {},
+      });
+    },
+    *findItem({ payload }, { call, put }) {
+      const resp = yield call(jobApi.findItemByKey, payload);
+      yield put({
+        type: 'saveJob',
+        payload: resp,
       });
     },
     *submitItemStep({ payload }, { call, put, select }) {
@@ -52,7 +60,7 @@ export default {
     saveOptionAll(state, { payload }) {
       const option = {
         ...payload,
-        programVersion: payload.programVersion.reduce((obj, item) => {
+        programVersion: (payload.programVersion || []).reduce((obj, item) => {
           const o = { ...obj };
           o[item.programId] = item.versions;
           return o;

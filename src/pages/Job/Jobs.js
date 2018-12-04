@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'dva';
 import router from 'umi/router';
+import Link from 'umi/link';
 import StandardTable from '@/components/StandardTable';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { Button, Card, Col, Divider, Dropdown, Icon, Row } from 'antd';
@@ -71,7 +72,7 @@ class Jobs extends Component {
       title: '操作',
       render: (text, record) => (
         <Fragment>
-          <a onClick={() => this.handleUpdateModalVisible(true, record)}>配置</a>
+          <Link to={`/job/item/${record.key}`}>编辑</Link>
           <Divider type="vertical" />
           <a href="">订阅警报</a>
         </Fragment>
@@ -93,7 +94,7 @@ class Jobs extends Component {
   };
 
   handleCreate = () => {
-    router.push('/job/item-step');
+    router.push('/job/item/add');
   };
 
   render() {
@@ -144,7 +145,7 @@ class Jobs extends Component {
                 <Button icon="plus" type="primary" onClick={() => this.handleCreate()}>
                   新建
                 </Button>
-                {selectedRows.length > 0 && (
+                {/*selectedRows.length > 0 && (
                   <span>
                     <Button>批量操作</Button>
                     <Dropdown>
@@ -153,7 +154,7 @@ class Jobs extends Component {
                       </Button>
                     </Dropdown>
                   </span>
-                )}
+                )*/}
               </div>
               <StandardTable
                 selectedRows={selectedRows}

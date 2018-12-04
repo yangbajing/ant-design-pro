@@ -158,7 +158,7 @@ export default function request(
       })
       .catch(e => {
         notification.error({
-          message: `请求错误 ${e.name}: ${e.response.url}`,
+          message: `请求错误 ${e.name}${e.response ? ': ' + e.response.url : ''}`,
           description: e.errortext,
         });
 
