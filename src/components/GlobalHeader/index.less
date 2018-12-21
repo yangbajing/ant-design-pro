@@ -4,7 +4,7 @@
 
 .header {
   height: @layout-header-height;
-  padding: 0;
+  padding: 0 8px 0 0;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   position: relative;
@@ -61,7 +61,7 @@
     &:hover {
       background: @pro-header-hover-bg;
     }
-    :global(&.ant-popover-open) {
+    &:global(.opened) {
       background: @pro-header-hover-bg;
     }
   }
@@ -90,7 +90,7 @@
       color: rgba(255, 255, 255, 0.85);
     }
     &:hover,
-    &:global(.ant-popover-open) {
+    &:global(.opened) {
       background: @primary-color;
     }
     :global(.ant-badge) {
