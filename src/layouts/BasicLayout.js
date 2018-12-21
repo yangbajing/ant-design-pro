@@ -196,9 +196,9 @@ class BasicLayout extends React.PureComponent {
             {...this.props}
           />
           <Content className={styles.content} style={contentStyle}>
-            <Authorized authority={routerConfig} noMatch={<Exception403 />}>
+            {/*<Authorized authority={routerConfig} noMatch={<Exception403 />}>*/}
               {children}
-            </Authorized>
+            {/*</Authorized>*/}
           </Content>
           <Footer />
         </Layout>
